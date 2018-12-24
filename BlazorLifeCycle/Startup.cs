@@ -1,3 +1,4 @@
+using BlazorLifeCycle.Services;
 using Microsoft.AspNetCore.Blazor.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
