@@ -8,31 +8,34 @@
 
 @functions {
 
-CounterData currentCount;
+  CounterData currentCount;
 
-void IncrementCount()
-{
-    currentCount.Value++;
-}
+  void IncrementCount()
+  {
+      currentCount.Value++;
+  }
 
-protected override async Task OnParametersSetAsync()
-{
-    await base.OnParametersSetAsync();
-    try
-    {
-        currentCount = await Services.LifeCycle.GetAppState<CounterData>("Counter");
-    }
-    catch (Exception)
-    {
-        currentCount = new CounterData();
-        Services.LifeCycle.AddToAppState("Counter", currentCount, 1);
-    }
-}
+  protected override async Task OnParametersSetAsync()
+  {
+      await base.OnParametersSetAsync();
+      try
+      {
+          Console.WriteLine("TEST: Getting Counter AppState");
+          currentCount = await Services.LifeCycle.GetAppState<CounterData>("Counter", 1);
+          Console.WriteLine($"TEST: Got Counter AppState {currentCount.Value}");
+      }
+      catch (Exception)
+      {
+          Console.WriteLine("TEST: Creating Counter AppState");
+          currentCount = new CounterData();
+          Services.LifeCycle.AddToAppState("Counter", currentCount, 1);
+      }
+  }
 
-[Serializable]
-class CounterData
-{
-    public int Value;
-}
-//
+  [Serializable]
+  class CounterData
+  {
+      public int Value;
+  }
+  //
 }

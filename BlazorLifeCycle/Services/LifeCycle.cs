@@ -12,49 +12,47 @@ namespace BlazorLifeCycle.Services
 		public static readonly Dictionary<string, object> appState = new Dictionary<string, object>();
 		public static readonly Dictionary<string, int> appStateTimeout = new Dictionary<string, int>();
 
-		private static async Task ReloadAppState()
-		{
-			string cookie = await JSRuntime.Current.InvokeAsync<string>("blazorLifeCycle.readcookie");
-			ProcessCookies(cookie);
-		}
+		//private static async Task ReloadAppState()
+		//{
+		//	string[] cookie = await JSRuntime.Current.InvokeAsync<string[]>("blazorLifeCycle.listdata");
+		//	await ProcessCookies(cookie);
+		//}
 
-		private static void ProcessCookies(string cookie)
-		{
-			Console.WriteLine($"TEST: cookie={cookie}");
-			string[] cookies = cookie.Split(';');
-			for (int i = 0; i < cookies.Length; i++)
-			{
-				string[] kvp = cookies[i].Split('=');
-				var name = kvp?[0];
-				var value = kvp?[1];
-				Console.WriteLine($"TEST: name={name}, value={value}");
-				if (!string.IsNullOrWhiteSpace(name) && !string.IsNullOrWhiteSpace(value))
-				{
-					ExtractAndReHydrate(name, value);
-				}
-			}
-		}
+		//private static async Task ProcessCookies(string[] cookies)
+		//{
+		//	Console.WriteLine($"TEST: cookies={cookies}");
+		//	for (int i = 0; i < cookies.Length; i++)
+		//	{
+		//		string name = cookies[i];
+		//		string value = await JSRuntime.Current.InvokeAsync<string>("blazorLifeCycle.readdata", name);
+		//		Console.WriteLine($"TEST: name={name}, value={value}");
+		//		if (!string.IsNullOrWhiteSpace(name) && !string.IsNullOrWhiteSpace(value))
+		//		{
+		//			ExtractAndReHydrate(name, value);
+		//		}
+		//	}
+		//}
 
-		private static void ExtractAndReHydrate(string name, string value)
-		{
-			var names = name.Split('|');
-			var objName = names?[0];
-			var objType = names?[1];
-			Console.WriteLine($"TEST: objName={objName}, objType={objType}, value={value}");
-			if (!string.IsNullOrWhiteSpace(objType))
-			{
-				ReHydrateState(value, objName, objType);
-			}
-		}
+		//private static void ExtractAndReHydrate(string name, string value)
+		//{
+		//	var names = name.Split('|');
+		//	var objName = names?[0];
+		//	var objType = names?[1];
+		//	Console.WriteLine($"TEST: objName={objName}, objType={objType}, value={value}");
+		//	if (!string.IsNullOrWhiteSpace(objType))
+		//	{
+		//		ReHydrateState(value, objName, objType);
+		//	}
+		//}
 
 		private static void ReHydrateState(string value, string objName, string objType)
 		{
 			Type type = Type.GetType(objType);
-			Console.WriteLine($"TEST: type={type?.FullName}");
+			Console.WriteLine($"REHYDRATE: type={type?.FullName}");
 			var mi = typeof(Json).GetMethod("Deserialize");
 			var desRef = mi.MakeGenericMethod(type);
 			var result = desRef.Invoke(null, new[] { value });
-			Console.WriteLine($"TEST: result={result?.GetType().FullName}");
+			Console.WriteLine($"REHYDRATE: result={result?.GetType().FullName}");
 			appState[objName] = result;
 		}
 
@@ -69,11 +67,11 @@ namespace BlazorLifeCycle.Services
 			foreach (var kvp in appState)
 			{
 				var timeout = appStateTimeout.ContainsKey(kvp.Key) ? appStateTimeout[kvp.Key] : 0;
-				string timeoutString = timeout > 0 ? $"expires={DateTime.UtcNow.AddDays(timeout).AddMinutes(-1).ToString("r")};" : "";
+				//string timeoutString = timeout > 0 ? DateTime.UtcNow.AddDays(timeout).AddMinutes(-1).ToString("r") : null;
 
 				JSRuntime
 					.Current
-					.InvokeAsync<bool>("blazorLifeCycle.savecookie", $"{kvp.Key}|{kvp.Value.GetType().FullName}", $"{Json.Serialize(kvp.Value)};{timeoutString}path=/");
+					.InvokeAsync<bool>("blazorLifeCycle.savedata", $"{kvp.Key}|{kvp.Value.GetType().FullName}", Json.Serialize(kvp.Value), timeout);
 			}
 			return null; //return a string to get a warning
 		}
@@ -84,10 +82,19 @@ namespace BlazorLifeCycle.Services
 			appStateTimeout[name] = timeout;
 		}
 
-		public static async Task<T> GetAppState<T>(string name) where T : class
+		public static async Task<T> GetAppState<T>(string name, int timeout=0) where T : class
 		{
+			Console.WriteLine($"LIFE: Looking for {name} AppState");
 			if (!appState.ContainsKey(name))
-				await ReloadAppState();
+			{
+				Console.WriteLine($"LIFE: Appstate for {name} not found");
+				string stName = $"{name}|{typeof(T).FullName}";
+				Console.WriteLine($"LIFE: Reading localstorage {stName}");
+				string value = await JSRuntime.Current.InvokeAsync<string>("blazorLifeCycle.readdata", stName);
+				Console.WriteLine($"LIFE: GOT localstorage {value}");
+				ReHydrateState(value, name, typeof(T).FullName);
+			}
+			appStateTimeout[name] = timeout;
 			return appState[name] as T;
 		}
 
