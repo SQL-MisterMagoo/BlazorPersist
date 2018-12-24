@@ -10,6 +10,7 @@ namespace BlazorLifeCycle.Services
 	public class LifeCycle
 	{
 		public static readonly Dictionary<string, object> appState = new Dictionary<string, object>();
+		public static readonly Dictionary<string, int> appStateTimeout = new Dictionary<string, int>();
 
 		private static async Task ReloadAppState()
 		{
@@ -67,17 +68,20 @@ namespace BlazorLifeCycle.Services
 
 			foreach (var kvp in appState)
 			{
+				var timeout = appStateTimeout.ContainsKey(kvp.Key) ? appStateTimeout[kvp.Key] : 0;
+				string timeoutString = timeout > 0 ? $"expires={DateTime.UtcNow.AddDays(timeout).AddMinutes(-1).ToString("r")};" : "";
+
 				JSRuntime
 					.Current
-					.InvokeAsync<bool>("blazorLifeCycle.savecookie", $"{kvp.Key}|{kvp.Value.GetType().FullName}", $"{Json.Serialize(kvp.Value)};expires=0;path=/");
-				Console.WriteLine($"{kvp.Key}|{kvp.Value.GetType().FullName} : {Json.Serialize(kvp.Value)};expires=0;path=/");
+					.InvokeAsync<bool>("blazorLifeCycle.savecookie", $"{kvp.Key}|{kvp.Value.GetType().FullName}", $"{Json.Serialize(kvp.Value)};{timeoutString}path=/");
 			}
-			return "Wait";
+			return null; //return a string to get a warning
 		}
 
-		public static void AddToAppState(string name, object value)
+		public static void AddToAppState(string name, object value, int timeout=0)
 		{
 			appState[name] = value;
+			appStateTimeout[name] = timeout;
 		}
 
 		public static async Task<T> GetAppState<T>(string name) where T : class
@@ -86,5 +90,6 @@ namespace BlazorLifeCycle.Services
 				await ReloadAppState();
 			return appState[name] as T;
 		}
+
 	}
 }

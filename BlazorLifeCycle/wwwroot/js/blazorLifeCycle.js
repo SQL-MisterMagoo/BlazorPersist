@@ -8,5 +8,5 @@
     }
 };
 window.onbeforeunload = function () {
-    return DotNet.invokeMethodAsync("BlazorLifeCycle", "onbeforeunload");
+    DotNet.invokeMethodAsync("BlazorLifeCycle", "onbeforeunload");
 };
