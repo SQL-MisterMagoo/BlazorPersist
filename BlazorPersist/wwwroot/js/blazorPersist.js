@@ -1,6 +1,6 @@
 ﻿const EXP_NAME = '_expires';
 
-window.blazorLifeCycle = {
+window.blazorPersist = {
 
     savedata: function (name, value) {
         if (name && value) {
@@ -20,5 +20,5 @@ window.blazorLifeCycle = {
     }
 };
 window.onbeforeunload = function () {
-    DotNet.invokeMethodAsync("BlazorLifeCycle", "onbeforeunload");
+    DotNet.invokeMethodAsync("BlazorPersist", "onbeforeunload");
 };

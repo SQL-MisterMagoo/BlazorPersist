@@ -5,7 +5,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 
-namespace BlazorLifeCycle.Services
+namespace BlazorPersist.Services
 {
 	public class LifeCycle
 	{
@@ -14,6 +14,7 @@ namespace BlazorLifeCycle.Services
 		/// <summary>
 		/// This method should be hooked up by javascript to the window.beforeunload event.
 		/// It will then save all state to localstorage.
+		/// See js/blazorPersist.js
 		/// </summary>
 		/// <returns></returns>
 		[JSInvokable("onbeforeunload")]
@@ -28,7 +29,7 @@ namespace BlazorLifeCycle.Services
 				kvp.Value.UpdateData();
 				JSRuntime
 					.Current
-					.InvokeAsync<bool>("blazorLifeCycle.savedata", kvp.Key, Json.Serialize( kvp.Value));
+					.InvokeAsync<bool>("blazorPersist.savedata", kvp.Key, Json.Serialize( kvp.Value));
 			}
 			return null; //return a string to get a warning
 		}
@@ -51,7 +52,7 @@ namespace BlazorLifeCycle.Services
 		{
 			if (!appState.ContainsKey(name))
 			{
-				var value = await JSRuntime.Current.InvokeAsync<string>("blazorLifeCycle.readdata", name);
+				var value = await JSRuntime.Current.InvokeAsync<string>("blazorPersist.readdata", name);
 				appState[name] = Json.Deserialize<LifeCycleCache<T>>(value);
 			}
 			var localCache = appState[name] as LifeCycleCache<T>;
@@ -59,7 +60,7 @@ namespace BlazorLifeCycle.Services
 			{
 				localCache.ObjectData = default(T);
 				localCache.cacheExpires = DateTime.MinValue;
-				await JSRuntime.Current.InvokeAsync<bool>("blazorLifeCycle.cleardata", name);
+				await JSRuntime.Current.InvokeAsync<bool>("blazorPersist.cleardata", name);
 			}
 			localCache.SaveAction = action;
 			return localCache.ObjectData;

@@ -15,7 +15,7 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "BlazorLifeCycle": {
+    "BlazorPersist": {
       "commandName": "Project",
       "launchBrowser": true,
       "environmentVariables": {

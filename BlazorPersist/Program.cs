@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Blazor.Hosting;
 
-namespace BlazorLifeCycle
+namespace BlazorPersist
 {
 	public class Program
 	{
