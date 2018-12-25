@@ -13,6 +13,10 @@ window.blazorLifeCycle = {
     readdata: function (name) {
         console.log("JS:READ: " + name);
         return localStorage.getItem(name);
+    },
+    cleardata: function (name) {
+        console.log("JS:CLEAR: " + name);
+        return localStorage.removeItem(name);
     }
 };
 window.onbeforeunload = function () {

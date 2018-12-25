@@ -9,7 +9,7 @@
 
 @functions {
 
-  MyData currentCount;
+  MyData currentCount=new MyData();
 
   void IncrementCount1()
   {
@@ -17,7 +17,7 @@
   }
   void IncrementCount2()
   {
-      currentCount.Counter1++;
+      currentCount.Counter2++;
   }
 
   protected override async Task OnParametersSetAsync()
@@ -30,7 +30,7 @@
       catch (Exception)
       {
           currentCount = new MyData();
-          Services.LifeCycle.AddToAppState("Counters", currentCount, 1);
+          Services.LifeCycle.AddToAppState("Counters", currentCount, 10);
       }
   }
 

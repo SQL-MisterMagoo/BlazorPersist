@@ -57,8 +57,9 @@ namespace BlazorLifeCycle.Services
 			var localCache = appState[name] as LifeCycleCache<T>;
 			if (localCache.LifeTimeMinutes > 0 && localCache.GetExpiryDate() < DateTime.UtcNow)
 			{
-				appState.Remove(name);
-				return default(T);
+				localCache.ObjectData = default(T);
+				localCache.cacheExpires = DateTime.MinValue;
+				await JSRuntime.Current.InvokeAsync<bool>("blazorLifeCycle.cleardata", name);
 			}
 			localCache.SaveAction = action;
 			return localCache.ObjectData;

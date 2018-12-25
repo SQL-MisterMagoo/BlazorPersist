@@ -8,28 +8,29 @@
 
 @functions {
 
-        int currentCount;
+  int currentCount;
 
-        void IncrementCount()
-        {
-            currentCount++;
-        }
+  void IncrementCount()
+  {
+      currentCount++;
+  }
 
   protected override async Task OnParametersSetAsync()
-    {
-        await base.OnParametersSetAsync();
-        try
-        {
-            currentCount = await Services.LifeCycle.GetAppState<int>("Counter", DataSave);
-        }
-        catch (Exception)
-        {
-            Services.LifeCycle.AddToAppState("Counter", currentCount, 1, DataSave);
-        }
-    }
-    int DataSave()
-    {
-        return currentCount;
-    }
-    //
+  {
+      await base.OnParametersSetAsync();
+
+      try
+      {
+          currentCount = await Services.LifeCycle.GetAppState<int>("Counter", DataSave);
+      }
+      catch (Exception)
+      {
+          Services.LifeCycle.AddToAppState("Counter", currentCount, 1, DataSave);
+      }
+  }
+  int DataSave()
+  {
+      return currentCount;
+  }
+  //
 }
