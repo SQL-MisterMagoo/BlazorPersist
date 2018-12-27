@@ -2,14 +2,15 @@
 
 <h1>Counter</h1>
 
-<p>Current counts: @currentCount.Counter1 , @currentCount.Counter2</p>
+<p>Current counts: @currentCount?.Counter1 , @currentCount?.Counter2</p>
 
 <button class="btn btn-primary" onclick="@IncrementCount1">Click me 1</button>
 <button class="btn btn-secondary" onclick="@IncrementCount2">Click me 2</button>
 
 @functions {
 
-  MyData currentCount=new MyData();
+  MyData currentCount;
+  Services.LifeCycleCache<MyData> state;
 
   void IncrementCount1()
   {
@@ -25,12 +26,24 @@
       await base.OnParametersSetAsync();
       try
       {
-          currentCount = await Services.LifeCycle.GetAppState<MyData>("Counters");
+          if (currentCount == null)
+          {
+              var state = await Services.LifeCycle.GetAppState<MyData>(name: "Counters", timeout: 10);
+              if (state.ObjectData == null)
+              {
+                  Console.WriteLine("Object data is null");
+                  state.ObjectData = new MyData();
+              }
+              currentCount = state.ObjectData;
+          }
       }
-      catch (Exception)
+      catch (Exception ex)
+      {
+          Console.WriteLine($"No saved state : {ex.GetBaseException().Message}");
+      }
+      if (currentCount == null)
       {
           currentCount = new MyData();
-          Services.LifeCycle.AddToAppState("Counters", currentCount, 10);
       }
   }
 

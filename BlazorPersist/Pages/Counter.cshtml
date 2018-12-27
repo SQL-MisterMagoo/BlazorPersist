@@ -2,35 +2,27 @@
 
 <h1>Counter</h1>
 
-<p>Current count: @currentCount</p>
+<p>Current count: @currentCount?.ObjectData</p>
 
 <button class="btn btn-primary" onclick="@IncrementCount">Click me</button>
 
 @functions {
 
-  int currentCount;
+  Services.LifeCycleCache<int> currentCount;
 
   void IncrementCount()
   {
-      currentCount++;
+      if (currentCount != null)
+          currentCount.ObjectData++;
   }
-
   protected override async Task OnParametersSetAsync()
   {
       await base.OnParametersSetAsync();
 
-      try
-      {
-          currentCount = await Services.LifeCycle.GetAppState<int>("Counter", DataSave);
-      }
-      catch (Exception)
-      {
-          Services.LifeCycle.AddToAppState("Counter", currentCount, 1, DataSave);
-      }
+      Console.WriteLine($"Getting saved state: {currentCount?.ObjectData}");
+      currentCount = await Services.LifeCycle.GetAppState<int>(name: "Counter", timeout: 1);
+      Console.WriteLine($"After getting saved state: {currentCount?.ObjectData}");
   }
-  int DataSave()
-  {
-      return currentCount;
-  }
+
   //
 }
