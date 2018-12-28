@@ -2,26 +2,56 @@
 
 <h1>Input</h1>
 
-<p>Current value: @data?.ObjectData</p>
 
-<input type="text" value="@data?.ObjectData" oninput="@OnInput" placeholder="Enter something"/>
+<div class="container-fluid my-4">
+    <div class="row justify-content-start">
+        <div class="col-4">
+            <label class="form-control">Current value: @data?.ObjectData</label>
+        </div>
+        <div class="col-4">
+            <label class="form-control">Current value2: @data2?.ObjectData</label>
+        </div>
+    </div>
+</div>
+<div class="container-fluid my-4">
+    <div class="row justify-content-start">
+        <div class="col-4">
+            <div class="form-group">
+                <input class="form-control" id="something" type="text" value="@data?.ObjectData" oninput="@OnInput" required autofocus="autofocus" />
+                <label class="form-control-placeholder" for="something">Enter something</label>
+            </div>
+        </div>
+        <div class="col-4">
+            <div class="form-group">
+                <input class="form-control" id="somethingelse" type="text" value="@data2?.ObjectData" oninput="@OnInput2" required  />
+                <label class="form-control-placeholder" for="somethingelse">Enter something else</label>
+            </div>
+        </div>
+    </div>
+</div>
 
 @functions {
 
-  Services.LifeCycleCache<string> data;
+Services.LifeCycleCache<string> data;
+Services.LifeCycleCache<string> data2;
 
-  void OnInput(UIChangeEventArgs args)
-  {
-      data.ObjectData = args.Value.ToString();
-  }
-  protected override async Task OnParametersSetAsync()
-  {
-      await base.OnParametersSetAsync();
+void OnInput(UIChangeEventArgs args)
+{
+    data.ObjectData = args.Value.ToString();
+}
 
-      Console.WriteLine($"Getting saved state: {data?.ObjectData}");
-      data = await Services.LifeCycle.GetAppState<string>(name: "InputSample", timeout: 0);
-      Console.WriteLine($"After getting saved state: {data?.ObjectData}");
-  }
+void OnInput2(UIChangeEventArgs args)
+{
+    data2.ObjectData = args.Value.ToString();
+}
 
-  //
+protected override async Task OnParametersSetAsync()
+{
+    await base.OnParametersSetAsync();
+
+    data = await Services.LifeCycle.GetAppState<string>(name: "InputSample", timeout: 0);
+    data2 = await Services.LifeCycle.GetAppState<string>(name: "InputSample2", timeout: 0);
+}
+
+//
 }
