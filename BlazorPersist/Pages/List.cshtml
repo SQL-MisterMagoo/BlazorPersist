@@ -1,0 +1,122 @@
+﻿@page "/list"
+@inherits BlazorComponent
+@using BlazorPersist.Models
+
+<h2>List Sample</h2>
+
+<div class="card">
+    <h5 class="card-header">This list has <span class="badge badge-primary badge-pill">@(data?.Count)</span> items.</h5>
+    <div class="card-body">
+        <div class="form-group callout-parent ">
+            <label for="parent">New User : </label>
+            <button class="btn btn-primary" id="parent" onclick="@AddNewUser">New User</button>
+        </div>
+        <div class="@AddingNewUser">
+            <div class="input-group mb-3">
+                <input bind=@localName
+                       type="text"
+                       class="form-control"
+                       placeholder="Username"
+                       aria-label="Username" />
+            </div>
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <span class="input-group-text" id="basic-addon1">@@</span>
+                </div>
+                <input bind=@localNick
+                       type="text"
+                       class="form-control"
+                       placeholder="Nickname"
+                       aria-label="Nickname"
+                       aria-describedby="basic-addon1" />
+            </div>
+            <div>
+                <button class="btn btn-success" onclick=@AddNewUserConfirm>Confirm</button>
+                <button class="btn btn-danger" onclick=@AddNewUserCancel>Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="card">
+    <div class="card-body">
+        <div class="form-group callout-child">
+            <ListView bind-ListData="@data" ChangeAction="@ListItemChanged" TList="SampleUserData">
+                <ListItemContent>
+                    <h6>@context.Name ( @($"@{context.NickName}") )</h6>
+                </ListItemContent>
+            </ListView>
+        </div>
+    </div>
+</div>
+
+@functions
+{
+  void Refresh(UIMouseEventArgs args) => StateHasChanged();
+
+  string AddingNewUser = "d-none";
+  string localName = "";
+  string localNick = "";
+  static List<SampleUserData> data;
+
+  void ListItemChanged(ISampleData item,string action)
+  {
+      StateHasChanged();
+  }
+
+  void AddNewUser(UIMouseEventArgs args)
+  {
+      AddingNewUser = "";
+      StateHasChanged();
+  }
+
+  void AddNewUserConfirm(UIMouseEventArgs args)
+  {
+      if (string.IsNullOrWhiteSpace(localName) ||
+          string.IsNullOrWhiteSpace(localNick) ||
+          data.Any(x => x.NickName.Equals(localNick, StringComparison.InvariantCultureIgnoreCase)))
+          return;
+
+      var newUser = new SampleUserData(localName, localNick);
+      localName = "";
+      localNick = "";
+
+      data.Add(newUser);
+      ListItemChanged(newUser, "Added");
+      AddingNewUser = "d-none";
+      StateHasChanged();
+  }
+  void AddNewUserCancel(UIMouseEventArgs args)
+  {
+      AddingNewUser = "d-none";
+      StateHasChanged();
+  }
+  protected override async Task OnParametersSetAsync()
+  {
+      await base.OnParametersSetAsync();
+      try
+      {
+          if (data == null)
+          {
+              var state = await Services.LifeCycle.GetAppState<List<SampleUserData>>(name: "Users");
+              if (state.ObjectData == null)
+              {
+                  Console.WriteLine("Object data is null");
+                  state.ObjectData = new List<SampleUserData>() { new SampleUserData("Test1", "TimmyTester") };
+              }
+              data = state.ObjectData;
+          }
+      }
+      catch (Exception ex)
+      {
+          Console.WriteLine($"No saved state : {ex.GetBaseException().Message}");
+      }
+      if (data == null)
+      {
+          data = new List<SampleUserData>() { new SampleUserData("Test1", "TimmyTester") };
+      }
+
+  }
+  //
+}
