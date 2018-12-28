@@ -1,4 +1,10 @@
-﻿.form-group {
+﻿ /* 
+     Bootstrap floating label :
+     https://codepen.io/peiche/pen/xOVpPo
+
+ */
+
+.form-group {
     position: relative;
     margin-bottom: 1.5rem;
 }
