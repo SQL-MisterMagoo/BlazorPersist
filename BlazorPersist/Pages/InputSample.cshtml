@@ -1,0 +1,27 @@
+﻿@page "/input"
+
+<h1>Input</h1>
+
+<p>Current value: @data?.ObjectData</p>
+
+<input type="text" value="@data?.ObjectData" oninput="@OnInput" placeholder="Enter something"/>
+
+@functions {
+
+  Services.LifeCycleCache<string> data;
+
+  void OnInput(UIChangeEventArgs args)
+  {
+      data.ObjectData = args.Value.ToString();
+  }
+  protected override async Task OnParametersSetAsync()
+  {
+      await base.OnParametersSetAsync();
+
+      Console.WriteLine($"Getting saved state: {data?.ObjectData}");
+      data = await Services.LifeCycle.GetAppState<string>(name: "InputSample", timeout: 0);
+      Console.WriteLine($"After getting saved state: {data?.ObjectData}");
+  }
+
+  //
+}
