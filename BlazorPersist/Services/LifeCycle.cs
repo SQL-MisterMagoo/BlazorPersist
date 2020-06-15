@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace BlazorPersist.Services
@@ -29,7 +30,7 @@ namespace BlazorPersist.Services
 				kvp.Value.UpdateData();
 				JSRuntime
 					.Current
-					.InvokeAsync<bool>("blazorPersist.savedata", kvp.Key, Json.Serialize(kvp.Value));
+					.InvokeAsync<bool>("blazorPersist.savedata", kvp.Key, JsonSerializer.Serialize(kvp.Value));
 			}
 			return null; //return a string to get a warning
 		}
@@ -77,7 +78,7 @@ namespace BlazorPersist.Services
 				Console.WriteLine($"APP:Read from storage: {stValue ?? "{null}"}");
 				if (stValue != null)
 				{
-					appState[name] = Json.Deserialize<LifeCycleCache<T>>(stValue);
+					appState[name] = JsonSerializer.Deserialize<LifeCycleCache<T>>(stValue);
 					Console.WriteLine($"APP:Got storage appstate...");
 					HandleExpiry<T>(name, timeout);
 				}

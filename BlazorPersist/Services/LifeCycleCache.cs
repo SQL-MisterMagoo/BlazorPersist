@@ -1,5 +1,6 @@
 ﻿using Microsoft.JSInterop;
 using System;
+using System.Text.Json;
 
 namespace BlazorPersist.Services
 {
@@ -18,7 +19,7 @@ namespace BlazorPersist.Services
 		}
 		public string AsJson()
 		{
-			return Json.Serialize(this);
+			return JsonSerializer.Serialize(this);
 		}
 
 		public void UpdateData()
